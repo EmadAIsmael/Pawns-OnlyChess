@@ -13,6 +13,29 @@
           <set>
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/Pawns-Only Chess/task" />
+            <option value="$PROJECT_DIR$/Topics/Generic functions/Extracting info" />
+            <option value="$PROJECT_DIR$/Topics/Generic functions/Guess what's in the box" />
+            <option value="$PROJECT_DIR$/Topics/Generic functions/More Kotlin" />
+            <option value="$PROJECT_DIR$/Topics/Generic functions/Revert the collection" />
+            <option value="$PROJECT_DIR$/Topics/Generic functions/Theory" />
+            <option value="$PROJECT_DIR$/Topics/Generics and Any/Correct the usage of a non-generic class" />
+            <option value="$PROJECT_DIR$/Topics/Generics and Any/Initialize an object of a generic class" />
+            <option value="$PROJECT_DIR$/Topics/Generics and Any/Theory" />
+            <option value="$PROJECT_DIR$/Topics/Type Bounds/Checking mailbox" />
+            <option value="$PROJECT_DIR$/Topics/Type Bounds/Cooking and coding are fine_" />
+            <option value="$PROJECT_DIR$/Topics/Type Bounds/Get bigger_" />
+            <option value="$PROJECT_DIR$/Topics/Type Bounds/Pets and boxes" />
+            <option value="$PROJECT_DIR$/Topics/Type Bounds/Theory" />
+            <option value="$PROJECT_DIR$/Topics/Type aliases/Alias for a map" />
+            <option value="$PROJECT_DIR$/Topics/Type aliases/Correct mistakes" />
+            <option value="$PROJECT_DIR$/Topics/Type aliases/Don't be afraid of snakes and correct mistakes" />
+            <option value="$PROJECT_DIR$/Topics/Type aliases/Openning boxes" />
+            <option value="$PROJECT_DIR$/Topics/Type aliases/Theory" />
+            <option value="$PROJECT_DIR$/Topics/Type conversion/Cutting the fraction" />
+            <option value="$PROJECT_DIR$/Topics/Type conversion/Lie detector" />
+            <option value="$PROJECT_DIR$/Topics/Type conversion/Simple converter" />
+            <option value="$PROJECT_DIR$/Topics/Type conversion/The superior forces of the Empire" />
+            <option value="$PROJECT_DIR$/Topics/Type conversion/Theory" />
             <option value="$PROJECT_DIR$/util" />
           </set>
         </option>

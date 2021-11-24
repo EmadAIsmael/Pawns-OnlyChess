@@ -1,0 +1,16 @@
+type: code
+files:
+- name: src/Main.kt
+  visible: true
+  text: |-
+    class Box<T>(val item: T) {
+        // define the function here
+
+    }
+  learner_created: false
+feedback_link: https://hyperskill.org/learn/step/16058#comment
+status: Solved
+feedback:
+  message: <html>Correct solution</html>
+  time: Fri, 19 Nov 2021 22:08:25 UTC
+record: -1

@@ -1,0 +1,23 @@
+type: code
+files:
+- name: src/Main.kt
+  visible: true
+  text: |-
+    //here is a mistake!
+    type alias Pet.Reptile.Snake = Snake
+
+    //don't change the code below!
+    class Pet {
+        class Reptile {
+            class Snake(str: String) {
+                val sound = str
+            }
+        }
+    }
+  learner_created: false
+feedback_link: https://hyperskill.org/learn/step/15358#comment
+status: Solved
+feedback:
+  message: <html>Correct solution</html>
+  time: Fri, 19 Nov 2021 16:08:58 UTC
+record: -1

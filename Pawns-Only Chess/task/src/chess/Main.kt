@@ -1,4 +1,4 @@
-      package chess
+package chess
 
 fun main() {
     val game = PawnsOnlyChess()
