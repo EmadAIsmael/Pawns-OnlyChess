@@ -271,7 +271,7 @@ files:
 - name: src/chess/Player.kt
   visible: true
   learner_created: true
-feedback_link: https://hyperskill.org/projects/182/stages/923/implement#comment
+feedback_link: https://hyperskill.org/learn/step/13175#comment
 status: Solved
 feedback:
   message: Congratulations!
