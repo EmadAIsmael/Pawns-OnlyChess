@@ -3,7 +3,7 @@ hyperskill_project:
   ide_files: https://stepik.org/media/attachments/lesson/531252/additional_files.json
   is_template_based: false
   use_ide: true
-update_date: Mon, 29 Nov 2021 16:50:04 UTC
+update_date: Thu, 02 Dec 2021 19:55:31 UTC
 stages:
 - id: 922
   step: 13174
@@ -16,7 +16,7 @@ stages:
   is_completed: true
 - id: 925
   step: 13177
-  is_completed: false
+  is_completed: true
 - id: 926
   step: 13178
   is_completed: false
@@ -134,8 +134,6 @@ topics:
   4:
   - title: The concept of patterns
     theory_id: 3611
-  - title: Introduction to software architecture
-    theory_id: 15368
   - title: Computer programming
     theory_id: 8739
   - title: Introduction to OOP
@@ -146,6 +144,8 @@ topics:
     theory_id: 8963
   - title: Declaring classes
     theory_id: 6200
+  - title: Introduction to software architecture
+    theory_id: 15368
   - title: Functional decomposition
     theory_id: 12668
   - title: Default arguments

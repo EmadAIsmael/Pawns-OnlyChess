@@ -1,6 +1,6 @@
 package chess
 
 fun main() {
-    val game = PawnsOnlyChess()
-    game.play()
+    val game = ChessGame()
+     game.play()
 }
