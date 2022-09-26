@@ -595,6 +595,430 @@ files:
 
 
   learner_created: false
+- name: src/chess/Board.kt
+  visible: true
+  text: |
+    package chess
+
+    class Board {
+        private val rankCount = 8           // rows in chess are called "ranks".
+        private val fileCount = 8           // columns in chess are called "files".
+        // private val ranks = ('1'..'8')
+        private val files = ('a'..'h')
+        private val board = Array(8) {
+            Array<Pawn?>(8) {
+                null
+            }
+        }
+
+        fun setSquare(rank: Int, file: Char, piece: Pawn? = null) {
+            board[rank - 1][file - 'a'] = piece
+        }
+
+        fun resetSquare(rank: Int, file: Char) {
+            board[rank - 1][file - 'a'] = null
+        }
+
+        fun getSquare(rank: Int, file: Char): Pawn? = board[rank - 1][file - 'a']
+
+        fun getSquare(sqr: Square): Pawn? = board[sqr.rank - 1][sqr.file - 'a']
+
+        fun isFree(to: Square): Boolean {
+            return getSquare(to.rank, to.file) == null
+        }
+
+        fun display() {
+            println(this.toString())
+        }
+
+        override fun toString(): String {
+            val files = "   " + files.joinToString("") { c ->
+                " $c  "
+            }
+            var str = ""
+            val topBottomBoarder = "  +${"---+".repeat(this.fileCount)}\n"
+
+            str += topBottomBoarder
+            str += board.reversed().mapIndexed { r, rankRow ->
+                "${rankCount - r} |" +
+                        rankRow.mapIndexed { _, p ->
+                            " ${if (p != null) if (!p.isTaken) p.toString() else " " else " "} |"
+                        }.joinToString("") +
+                        "\n" + topBottomBoarder
+            }.joinToString("")
+
+            str += files
+            return str
+        }
+
+        fun structurePieces(players: Array<Player>) {
+            players.forEach { player ->
+                player.pieces.forEach { pawn ->
+                    setSquare(pawn.initialRank, pawn.initSquare.file, pawn)
+                }
+            }
+        }
+
+        fun isAcceptableMove(move: String): Boolean {
+            /*return move == "exit" ||
+                    (move.length == 4 &&
+                            move[0] in files &&
+                            move[2] in files &&
+                            move[1] in ranks &&
+                            move[3] in ranks)*/
+            return move.matches("(exit)|([a-h][1-8][a-h][1-8])".toRegex())
+        }
+    }
+
+    data class Square(var file: Char, var rank: Int) {
+        fun isValidSquare(): Boolean = this.toString().matches("[a-h][1-8]".toRegex())
+        override fun toString(): String = this.file.toString() + this.rank.toString()
+    }
+
+    class Move(move: String) {
+        val curSquare = move.substring(0..1)
+        private val newSquare = move.substring(2..3)
+
+        val from: Square
+            get() = Square(curSquare.first(), curSquare.last().toString().toInt())
+
+        val to: Square
+            get() = Square(newSquare.first(), newSquare.last().toString().toInt())
+    }
+  learner_created: true
+- name: src/chess/ChessGame.kt
+  visible: true
+  text: |
+    package chess
+
+    import kotlin.math.abs
+
+    class ChessGame {
+        private lateinit var players: Array<Player>
+        private val board: Board = Board()
+        private var turn = 0
+
+        private fun getName(order: String): String {
+            println("$order Player's name:")
+            return readLine()!!
+        }
+
+        private fun getPlayerNames() {
+            players = arrayOf(
+                FirstPlayer(name = getName("First")),
+                SecondPlayer(name = getName("Second"))
+            )
+        }
+
+        private fun setInitSquares() {
+            board.structurePieces(players)
+        }
+
+        private fun promptForMove(turn: Int): String {
+            println("${players[turn].name}'s turn:")
+            return players[turn].requestMove()
+        }
+
+        fun play() {
+            println("Pawns-Only Chess")
+            getPlayerNames()
+            setInitSquares()
+            board.display()
+
+            var move = ""
+            while (move != "exit") {
+                move = promptForMove(turn)
+                if (!board.isAcceptableMove(move)) {
+                    println("Invalid Input")
+                    continue
+                } else if (move == "exit") {
+                    continue
+                } else {
+                    if (players[turn].movePiece(board, players[turn], move)) {
+                        val m = Move(move)
+                        val piece = board.getSquare(m.to.rank, m.to.file)
+                        history.add(HistoryRecord(piece!!, Move(move)))
+                        board.display()
+                        turn++
+                        turn %= 2
+                    }
+                }
+            }
+            println("Bye!")
+        }
+
+        companion object {
+            data class HistoryRecord(val piece: Pawn, val move: Move)
+
+            var history = mutableListOf<HistoryRecord>()
+            lateinit var enpassant: EnPassant
+            fun lastMovePiece() = history[history.lastIndex].piece
+            fun lastMoveMove() = history[history.lastIndex].move
+            fun lastMoveWasTwoSteps(): Boolean =
+                abs(lastMoveMove().to.rank - lastMoveMove().from.rank) == 2
+        }
+    }
+
+    data class EnPassant(var takingPawn: Pawn, var takenPawn: Pawn, var newSquare: Square)
+  learner_created: true
+- name: src/chess/Pawn.kt
+  visible: true
+  text: |
+    package chess
+
+    abstract class Pawn {
+        abstract val color: String
+        abstract val symbol: String
+        abstract val initialRank: Int
+        abstract val initSquare: Square
+        abstract val curSquare: Square
+
+        var isTaken: Boolean = false
+
+        abstract fun isValidMove(to: Square, board: Board): Boolean
+        abstract fun isValidCapture(to: Square, board: Board): Boolean
+        abstract fun isValidEnPassant(to: Square, board: Board): Boolean
+        abstract fun isOpponent(p: Pawn?): Boolean
+        override fun toString(): String = symbol
+        fun setCurrentSquare(newRank: Int, newFile: Char) {
+            curSquare.rank = newRank
+            curSquare.file = newFile
+        }
+    }
+
+    class WhitePawn(initFile: Char = 'a') : Pawn() {
+        override val color = "White"
+        override val symbol = "W"
+        override val initialRank = 2
+        override val initSquare = Square(initFile, initialRank)
+        override val curSquare = Square(initFile, initialRank)
+
+        private fun isMovingForward(to: Square): Boolean {
+            // e.g. from "a2" to "a3"
+            return (curSquare.file == to.file) &&
+                    (curSquare.rank < to.rank)
+        }
+
+        private fun isMovingFromInitPosTwoSteps(to: Square): Boolean {
+            return curSquare.rank == initialRank &&
+                    to.rank > curSquare.rank &&
+                    to.rank - curSquare.rank == 2
+        }
+
+        private fun isMovingOneStep(to: Square): Boolean {
+            return to.rank - curSquare.rank == 1
+        }
+
+        override fun isValidMove(to: Square, board: Board): Boolean {
+            return board.isFree(to) &&
+                    isMovingForward(to) &&
+                    (isMovingOneStep(to) ||
+                            isMovingFromInitPosTwoSteps(to))
+        }
+
+        override fun isValidCapture(to: Square, board: Board): Boolean {
+            // find allowed capture squares
+            // if "to" square in allowed capture squares
+            // and "to" square contains a foe,
+            // then return true; you can take foe pawn.
+            val attackSqr = mutableListOf(
+                Square(curSquare.file - 1, curSquare.rank + 1),
+                Square(curSquare.file + 1, curSquare.rank + 1)
+            ).filter {
+                it.isValidSquare() && isOpponent(board.getSquare(it))
+            }.filter {
+                it == to
+            }
+            return (to in attackSqr)
+        }
+
+        override fun isValidEnPassant(to: Square, board: Board): Boolean {
+            val attackSqr = mutableListOf(
+                Square(curSquare.file - 1, curSquare.rank),
+                Square(curSquare.file + 1, curSquare.rank)
+            ).filter {
+                it.isValidSquare() &&
+                        isOpponent(board.getSquare(it)) &&
+                        ChessGame.lastMovePiece() == board.getSquare(it) &&
+                        ChessGame.lastMoveWasTwoSteps() &&
+                        (to.file == ChessGame.lastMovePiece().curSquare.file &&
+                                to.rank == ChessGame.lastMovePiece().curSquare.rank + 1)
+    //                            if (ChessGame.lastMovePiece() is WhitePawn) 1 else -1)
+            }
+            return if (attackSqr.isNotEmpty()) {
+                ChessGame.enpassant = EnPassant(this, ChessGame.lastMovePiece(), to)
+                true
+            } else
+                false
+        }
+
+        override fun isOpponent(p: Pawn?): Boolean {
+            return if (p == null) false
+            else
+                p::class != this::class
+        }
+    }
+
+    class BlackPawn(initFile: Char = 'a') : Pawn() {
+        override val color = "Black"
+        override val symbol = "B"
+        override val initialRank = 7
+        override val initSquare = Square(initFile, initialRank)
+        override val curSquare = Square(initFile, initialRank)
+
+        private fun isMovingForward(to: Square): Boolean {
+            // e.g. from "a7" to "a6"
+            return curSquare.file == to.file &&
+                    curSquare.rank > to.rank
+        }
+
+        private fun isMovingFromInitPosTwoSteps(to: Square): Boolean {
+            return curSquare.rank == initialRank &&
+                    to.rank < curSquare.rank &&
+                    to.rank - curSquare.rank == -2
+        }
+
+        private fun isMovingOneStep(to: Square): Boolean {
+            return to.rank - curSquare.rank == -1
+        }
+
+        override fun isValidMove(to: Square, board: Board): Boolean {
+            return board.isFree(to) &&
+                    isMovingForward(to) &&
+                    (isMovingOneStep(to) ||
+                            isMovingFromInitPosTwoSteps(to))
+        }
+
+        override fun isValidCapture(to: Square, board: Board): Boolean {
+            // find allowed capture squares
+            // if "to" square in allowed capture squares
+            // and "to" square contains a foe,
+            // then return true; you can take foe pawn.
+            val attackSqr = mutableListOf(
+                Square(curSquare.file - 1, curSquare.rank - 1),
+                Square(curSquare.file + 1, curSquare.rank - 1)
+            ).filter {
+                it.isValidSquare() && isOpponent(board.getSquare(it))
+            }.filter {
+                it == to
+            }
+            return (to in attackSqr)
+        }
+
+        override fun isValidEnPassant(to: Square, board: Board): Boolean {
+            val attackSqr = mutableListOf(
+                Square(curSquare.file - 1, curSquare.rank),
+                Square(curSquare.file + 1, curSquare.rank)
+            ).filter {
+                it.isValidSquare() &&
+                        isOpponent(board.getSquare(it)) &&
+                        ChessGame.lastMovePiece() == board.getSquare(it) &&
+                        ChessGame.lastMoveWasTwoSteps() &&
+                        (it.file == ChessGame.lastMovePiece().curSquare.file &&
+                                it.rank == ChessGame.lastMovePiece().curSquare.rank - 1)
+    //                            if (ChessGame.lastMovePiece() is WhitePawn) 1 else -1)
+            }
+            return attackSqr.isNotEmpty()
+        }
+
+        override fun isOpponent(p: Pawn?): Boolean {
+            return if (p == null) false
+            else
+                p::class != this::class
+        }
+    }
+  learner_created: true
+- name: src/chess/Player.kt
+  visible: true
+  text: |
+    package chess
+
+    abstract class Player(val name: String) {
+        abstract val color: String
+        abstract var pieces: List<Pawn>
+        val files = ('a'..'h')
+
+        fun requestMove(): String {
+            return readLine()!!
+        }
+
+        fun movePiece(board: Board, player: Player, move: String): Boolean {
+            val m = Move(move)
+
+            val from = m.curSquare
+            val oldFile = m.from.file
+            val oldRank = m.from.rank
+
+            val newFile = m.to.file
+            val newRank = m.to.rank
+
+            val piece = board.getSquare(oldRank, oldFile)
+            if (piece !in pieces) {
+                println("No ${player.color} pawn at $from")
+                return false
+            }
+            return when {
+                piece?.isValidMove(m.to, board) == true -> {
+                    // remove pawn from current square
+                    // move pawn to new square
+                    // set pawn's current square to new square
+                    board.resetSquare(oldRank, oldFile)
+                    piece.setCurrentSquare(newRank, newFile)
+                    board.setSquare(newRank, newFile, piece)
+                    true
+                }
+                piece?.isValidCapture(m.to, board)!! -> {
+                    // set opponent pawn's state to taken
+                    // to remove it from board
+                    // remove pawn from current square
+                    // move pawn to new square.
+                    val opponent = board.getSquare(m.to)
+                    opponent?.isTaken = true
+                    board.resetSquare(opponent!!.curSquare.rank, opponent.curSquare.file)
+                    board.resetSquare(piece.curSquare.rank, piece.curSquare.file)
+                    piece.setCurrentSquare(newRank, newFile)
+                    board.setSquare(newRank, newFile, piece)
+                    true
+                }
+                piece.isValidEnPassant(m.to, board) -> {
+                    val ep = ChessGame.enpassant
+                    ep.takenPawn.isTaken = true
+                    board.resetSquare(ep.takenPawn.curSquare.rank, ep.takenPawn.curSquare.file)
+
+                    board.resetSquare(ep.takingPawn.curSquare.rank, ep.takingPawn.curSquare.file)
+                    ep.takingPawn.setCurrentSquare(ep.newSquare.rank, ep.newSquare.file)
+                    board.setSquare(ep.newSquare.rank, ep.newSquare.file, ep.takingPawn)
+                    true
+                }
+                else -> {
+                    println("Invalid Input")
+                    false
+                }
+            }
+        }
+    }
+
+    class FirstPlayer(name: String) : Player(name) {
+        override val color = "White"
+        override var pieces: List<Pawn> = files.map {
+            WhitePawn(it)
+        }
+    }
+
+    class SecondPlayer(name: String) : Player(name) {
+        override val color = "Black"
+        override var pieces: List<Pawn> = files.map {
+            BlackPawn(it)
+        }
+    }
+  learner_created: true
+- name: src/input_file.txt
+  visible: true
+  learner_created: true
 feedback_link: https://hyperskill.org/learn/step/13178#comment
-status: Unchecked
+status: Solved
+feedback:
+  message: Well done! You've finished the project. Select a new project on <a href="https://hyperskill.org/projects">JetBrains
+    Academy</a> to continue learning.
+  time: Mon, 26 Sep 2022 01:16:57 UTC
 record: -1

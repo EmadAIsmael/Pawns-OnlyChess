@@ -1,31 +1,68 @@
 package chess
 
+operator fun Array<Pawn>.get(file: Char): Pawn {
+    return this[file - 'a']
+}
+
 class Board {
-    private val rankCount = 8           // rows in chess are called "ranks".
-    private val fileCount = 8           // columns in chess are called "files".
-    // private val ranks = ('1'..'8')
+
     private val files = ('a'..'h')
-    private val board = Array(8) {
-        Array<Pawn?>(8) {
+    val whitePawns = Array<Pawn>(ChessParams.PAWN_COUNT) { WhitePawn(files.elementAt(it)) }
+    val blackPawns = Array<Pawn>(ChessParams.PAWN_COUNT) { BlackPawn(files.elementAt(it)) }
+    private val board = Array(ChessParams.RANK_COUNT) { rank ->
+        Array(ChessParams.FILE_COUNT) { file ->
+            Cell(files.elementAt(file), rank + 1)
+        }
+    }
+
+    operator fun get(cell: String): Cell {
+        if (Cell.isValidCell(cell)
+        ) {
+            val col = cell[0] - 'a'
+            val row = cell[1].toString().toInt() - 1
+            return this.board[row][col]
+        } else {
+            throw Exception("Invalid Board Cell Address!")
+        }
+    }
+
+    operator fun get(file: Char, rank: Int): Cell? {
+        return if (Cell.isValidCell("$file$rank")) {
+            val col = file - 'a'
+            val row = rank - 1
+            this.board[row][col]
+        } else {
             null
         }
     }
 
-    fun setSquare(rank: Int, file: Char, piece: Pawn? = null) {
-        board[rank - 1][file - 'a'] = piece
+    operator fun set(cell: String, value: Pawn) {
+        if (Cell.isValidCell(cell)) {
+            val col = cell[0] - 'a'
+            val row = cell[1].toString().toInt() - 1
+            this.board[row][col].content = value
+        } else {
+            throw Exception("Invalid Board Cell Address!")
+        }
     }
 
-    fun resetSquare(rank: Int, file: Char) {
-        board[rank - 1][file - 'a'] = null
+    operator fun set(file: Char, rank: Int, value: Pawn) {
+        if (Cell.isValidCell("$file$rank")) {
+            val col = file - 'a'
+            val row = rank - 1
+            this.board[row][col].content = value
+        } else {
+            throw Exception("Invalid Board Cell Address!")
+        }
     }
 
-    fun getSquare(rank: Int, file: Char): Pawn? = board[rank - 1][file - 'a']
-
-    fun getSquare(sqr: Square): Pawn? = board[sqr.rank - 1][sqr.file - 'a']
-
-    fun isFree(to: Square): Boolean {
-        return getSquare(to.rank, to.file) == null
+    init {
+        structurePawns()
     }
+
+    fun getPawnAt(addr: String): Pawn? = this[addr].content
+
+    fun getPawnAt(addr: CellAddress): Pawn? = getPawnAt(addr.addr)
 
     fun display() {
         println(this.toString())
@@ -36,13 +73,13 @@ class Board {
             " $c  "
         }
         var str = ""
-        val topBottomBoarder = "  +${"---+".repeat(this.fileCount)}\n"
+        val topBottomBoarder = "  +${"---+".repeat(ChessParams.FILE_COUNT)}\n"
 
         str += topBottomBoarder
         str += board.reversed().mapIndexed { r, rankRow ->
-            "${rankCount - r} |" +
+            "${ChessParams.RANK_COUNT - r} |" +
                     rankRow.mapIndexed { _, p ->
-                        " ${if (p != null) if (!p.isTaken) p.toString() else " " else " "} |"
+                        " ${if (p.content != null) if (!p.content!!.isTaken) p.content.toString() else " " else " "} |"
                     }.joinToString("") +
                     "\n" + topBottomBoarder
         }.joinToString("")
@@ -51,37 +88,60 @@ class Board {
         return str
     }
 
-    fun structurePieces(players: Array<Player>) {
-        players.forEach { player ->
-            player.pieces.forEach { pawn ->
-                setSquare(pawn.initialRank, pawn.initSquare.file, pawn)
-            }
+    private fun structurePawns() {
+        whitePawns.forEach {
+            this[it.initAddr] = it
+        }
+
+        blackPawns.forEach {
+            this[it.initAddr] = it
         }
     }
+}
 
-    fun isAcceptableMove(move: String): Boolean {
-        /*return move == "exit" ||
-                (move.length == 4 &&
-                        move[0] in files &&
-                        move[2] in files &&
-                        move[1] in ranks &&
-                        move[3] in ranks)*/
-        return move.matches("(exit)|([a-h][1-8][a-h][1-8])".toRegex())
+class Cell(var file: Char, var rank: Int, var content: Pawn? = null) {
+    constructor(cellAddr: CellAddress, content: Pawn? = null) : this(cellAddr.file, cellAddr.rank, content)
+    constructor(cellAddr: String, content: Pawn? = null) : this(CellAddress(cellAddr), content)
+
+    val addr = "$file$rank"
+
+    override fun toString(): String = "${this.file}${this.rank}"
+    fun receive(piece: Pawn) {
+        content = piece
+    }
+
+    fun setEmpty() {
+        content = null
+    }
+
+    fun containsOpponent(to: Pawn): Boolean {
+        // return this::class != to::class
+        return this.content is Pawn && this.content?.color != to.color
+    }
+
+    fun isFree(): Boolean = content == null
+
+    companion object {
+        fun isValidCell(cellAddr: String): Boolean {
+            return cellAddr.matches("[a-h][1-8]".toRegex()) &&
+                    cellAddr[0] in ChessParams.VALID_FILES &&
+                    cellAddr[1].toString().toInt() in 1..ChessParams.RANK_COUNT
+        }
     }
 }
 
-data class Square(var file: Char, var rank: Int) {
-    fun isValidSquare(): Boolean = this.toString().matches("[a-h][1-8]".toRegex())
-    override fun toString(): String = this.file.toString() + this.rank.toString()
-}
+class CellAddress(val addr: String) {
+    /**
+     * Address of one cell of the playing board
+     * two characters in the form: "[a-h][1-8]"
+     *
+     * rank: is the board row number
+     * file: is he board column label
+     *
+     */
+    val rank: Int
+        get() = addr.last().toString().toInt()
 
-class Move(move: String) {
-    val curSquare = move.substring(0..1)
-    private val newSquare = move.substring(2..3)
-
-    val from: Square
-        get() = Square(curSquare.first(), curSquare.last().toString().toInt())
-
-    val to: Square
-        get() = Square(newSquare.first(), newSquare.last().toString().toInt())
+    val file: Char
+        get() = addr.first()
 }

@@ -5,10 +5,9 @@
     <option name="linkedExternalProjectsSettings">
       <GradleProjectSettings>
         <option name="delegatedBuild" value="false" />
-        <option name="testRunner" value="GRADLE" />
-        <option name="distributionType" value="WRAPPED" />
+        <option name="testRunner" value="PLATFORM" />
+        <option name="distributionType" value="DEFAULT_WRAPPED" />
         <option name="externalProjectPath" value="$PROJECT_DIR$" />
-        <option name="gradleJvm" value="#JAVA_INTERNAL" />
         <option name="modules">
           <set>
             <option value="$PROJECT_DIR$" />
@@ -17,6 +16,7 @@
             <option value="$PROJECT_DIR$/Pawns-Only Chess/task/build/reports/tests" />
             <option value="$PROJECT_DIR$/Pawns-Only Chess/task/build/test-results" />
             <option value="$PROJECT_DIR$/Pawns-Only Chess/task/build/tmp" />
+            <option value="$PROJECT_DIR$/Pawns-Only Chess/task/out" />
             <option value="$PROJECT_DIR$/Topics/Generic functions/Extracting info" />
             <option value="$PROJECT_DIR$/Topics/Generic functions/Guess what's in the box" />
             <option value="$PROJECT_DIR$/Topics/Generic functions/More Kotlin" />
@@ -38,6 +38,16 @@
             <option value="$PROJECT_DIR$/Topics/Integers in action/The sum of digits" />
             <option value="$PROJECT_DIR$/Topics/Integers in action/Theory" />
             <option value="$PROJECT_DIR$/Topics/Integers in action/Time difference" />
+            <option value="$PROJECT_DIR$/Topics/Object declarations/Blocks in a box" />
+            <option value="$PROJECT_DIR$/Topics/Object declarations/Board game basics  Game" />
+            <option value="$PROJECT_DIR$/Topics/Object declarations/Cell" />
+            <option value="$PROJECT_DIR$/Topics/Object declarations/Keyword" />
+            <option value="$PROJECT_DIR$/Topics/Object declarations/Library" />
+            <option value="$PROJECT_DIR$/Topics/Object declarations/Manager" />
+            <option value="$PROJECT_DIR$/Topics/Object declarations/Me" />
+            <option value="$PROJECT_DIR$/Topics/Object declarations/Properties" />
+            <option value="$PROJECT_DIR$/Topics/Object declarations/Singleton defined" />
+            <option value="$PROJECT_DIR$/Topics/Object declarations/Theory" />
             <option value="$PROJECT_DIR$/Topics/Type Bounds/Checking mailbox" />
             <option value="$PROJECT_DIR$/Topics/Type Bounds/Cooking and coding are fine_" />
             <option value="$PROJECT_DIR$/Topics/Type Bounds/Get bigger_" />
